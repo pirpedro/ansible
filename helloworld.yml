@@ -1,0 +1,34 @@
+# vim:ft=ansible:
+
+- name: Wordpress installation
+  hosts: all
+  tasks:
+  - docker_service:
+    project_name: Wordpress
+    definition:
+      version: '2'
+      services:
+        db:
+          container_name: wordpress_db
+          image: mysql:5.7
+          volumes:
+          - "{{ playbook_dir }}/.data/db:/var/lib/mysql"
+          restart: always
+          environment:
+            MYSQL_ROOT_PASSWORD: wordpress
+            MYSQL_DATABASE: wordpress
+            MYSQL_USER: wordpress
+            MYSQL_PASSWORD: wordpress
+        wordpress:
+          container_name: wordpress_web
+          depends_on:
+            - db
+          image: wordpress:latest
+          links:
+            - db
+          ports:
+            - "8000:80"
+          restart: always
+          environment:
+            WORDPRESS_DB_HOST: db:3306
+            WORDPRESS_DB_PASSWORD: wordpress
